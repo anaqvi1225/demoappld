@@ -7,9 +7,9 @@ terraform {
  }
 
  backend "s3" {
-   bucket = "tf-tuts-state"
+   bucket = "ali-naqvi-test"
    key    = "state"
-   region = "eu-central-1"
+   region = "us-east-1"
  }
 }
 
