@@ -133,7 +133,7 @@ resource "aws_security_group" "db_sg" {
 
 # DB Subnet Group with both subnets
 resource "aws_db_subnet_group" "db_subnet_group" {
-  name       = "my-db-subnet-group"
+  name       = "Ali-db-subnet-group"
   subnet_ids = [aws_subnet.rds_subnet_1.id, aws_subnet.rds_subnet_2.id]
 }
 
