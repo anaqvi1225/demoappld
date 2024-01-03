@@ -133,8 +133,11 @@ resource "aws_security_group" "db_sg" {
 
 # DB Subnet Group with both subnets
 resource "aws_db_subnet_group" "db_subnet_group" {
-  name       = "Ali-db-subnet-group"
+  name       = "ali-db-subnet-group"
   subnet_ids = [aws_subnet.rds_subnet_1.id, aws_subnet.rds_subnet_2.id]
+tags = {
+    Name = "Ali DB Subnet Group"
+}
 }
 
 # RDS instance - PostgreSQL
