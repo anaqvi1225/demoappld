@@ -42,6 +42,19 @@ resource "aws_subnet" "ec2_subnet" {
   availability_zone = "us-east-1a"
 }
 
+# Create two subnets for RDS in different AZs
+resource "aws_subnet" "rds_subnet_1" {
+  vpc_id            = aws_vpc.my_vpc.id
+  cidr_block        = "10.0.2.0/24"
+  availability_zone = "us-east-1a"
+}
+
+resource "aws_subnet" "rds_subnet_2" {
+  vpc_id            = aws_vpc.my_vpc.id
+  cidr_block        = "10.0.3.0/24"
+  availability_zone = "us-east-1b"
+}
+
 # Internet Gateway for the VPC
 resource "aws_internet_gateway" "gw" {
   vpc_id = aws_vpc.my_vpc.id
@@ -118,12 +131,18 @@ resource "aws_security_group" "db_sg" {
   }
 }
 
+# DB Subnet Group with both subnets
+resource "aws_db_subnet_group" "db_subnet_group" {
+  name       = "my-db-subnet-group"
+  subnet_ids = [aws_subnet.rds_subnet_1.id, aws_subnet.rds_subnet_2.id]
+}
+
 # RDS instance - PostgreSQL
 resource "aws_db_instance" "postgres_db" {
   allocated_storage    = 20
   storage_type         = "gp2"
   engine               = "postgres"
-  engine_version       = "12.17"  # Updated version
+  engine_version       = "12.8"
   instance_class       = "db.t2.micro"
   name                 = "mydatabase"
   username             = var.db_username
@@ -132,10 +151,4 @@ resource "aws_db_instance" "postgres_db" {
   db_subnet_group_name = aws_db_subnet_group.db_subnet_group.name
   vpc_security_group_ids = [aws_security_group.db_sg.id]
   skip_final_snapshot  = true
-}
-
-# DB Subnet Group
-resource "aws_db_subnet_group" "db_subnet_group" {
-  name       = "my-db-subnet-group"
-  subnet_ids = [aws_subnet.ec2_subnet.id]
 }
