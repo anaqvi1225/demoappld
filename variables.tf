@@ -18,7 +18,7 @@ variable "name_tag" {
 
 variable "db_username" {
   description = "The username for the database"
-  default     ="admin"
+  default     ="alinaqvi"
   type        = string
 }
 
