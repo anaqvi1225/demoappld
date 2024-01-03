@@ -1,3 +1,31 @@
+variable "ami" {
+  type        = string
+  description = "Ubuntu AMI ID in N. Virginia Region"
+  default     = "ami-0c7217cdde317cfec"
+}
+
+variable "instance_type" {
+  type        = string
+  description = "Instance type"
+  default     = "t2.micro"
+}
+
+variable "name_tag" {
+  type        = string
+  description = "Name of the EC2 instance"
+  default     = "My EC2 Instance"
+}
+
+variable "db_username" {
+  description = "The username for the database"
+  type        = string
+}
+
+variable "db_password" {
+  description = "The password for the database"
+  type        = string
+}
+
 provider "aws" {
   region = "us-east-1"
 }
@@ -135,7 +163,7 @@ resource "aws_db_instance" "postgres_db" {
   engine               = "postgres"
   engine_version       = "12.4" # Change as necessary
   instance_class       = "db.t2.micro"
-  name                 = "mydatabase"
+  db_name              = "mydatabase"
   username             = "dbuser"
   password             = "mysecurepassword"
   parameter_group_name = "default.postgres12"
