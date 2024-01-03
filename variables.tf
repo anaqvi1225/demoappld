@@ -16,18 +16,6 @@ variable "name_tag" {
   default     = "My EC2 Instance"
 }
 
-variable "docker_image" {
-  description = "Docker image for the web service"
-  default     = "nginx"
-  type        = string
-}
-
-variable "docker_image_tag" {
-  description = "Tag of the Docker image"
-  default     = "latest"
-  type        = string
-}
-
 variable "db_username" {
   description = "The username for the database"
   default     = "admin"
@@ -47,24 +35,11 @@ resource "aws_vpc" "my_vpc" {
   enable_dns_hostnames = true
 }
 
-# Subnet for ECS Tasks
-resource "aws_subnet" "ecs_subnet" {
-  vpc_id            = aws_vpc.my_vpc.id
-  cidr_block        = "10.0.1.0/24"
+# Subnet for the EC2 instance
+resource "aws_subnet" "ec2_subnet" {
+  vpc_id     = aws_vpc.my_vpc.id
+  cidr_block = "10.0.1.0/24"
   availability_zone = "us-east-1a"
-}
-
-# Subnets for RDS
-resource "aws_subnet" "rds_subnet_1" {
-  vpc_id            = aws_vpc.my_vpc.id
-  cidr_block        = "10.0.2.0/24"
-  availability_zone = "us-east-1a"
-}
-
-resource "aws_subnet" "rds_subnet_2" {
-  vpc_id            = aws_vpc.my_vpc.id
-  cidr_block        = "10.0.3.0/24"
-  availability_zone = "us-east-1b"
 }
 
 # Internet Gateway for the VPC
@@ -83,7 +58,7 @@ resource "aws_route_table" "rt" {
 }
 
 resource "aws_route_table_association" "a" {
-  subnet_id      = aws_subnet.ecs_subnet.id
+  subnet_id      = aws_subnet.ec2_subnet.id
   route_table_id = aws_route_table.rt.id
 }
 
@@ -112,7 +87,7 @@ resource "aws_security_group" "web_sg" {
 resource "aws_instance" "web_server" {
   ami           = var.ami
   instance_type = var.instance_type
-  subnet_id     = aws_subnet.ecs_subnet.id
+  subnet_id     = aws_subnet.ec2_subnet.id
   vpc_security_group_ids = [aws_security_group.web_sg.id]
 
   user_data = <<-EOF
@@ -139,7 +114,7 @@ resource "aws_security_group" "db_sg" {
     from_port   = 5432
     to_port     = 5432
     protocol    = "tcp"
-    cidr_blocks = ["10.0.1.0/24"] # Restrict to the ECS subnet
+    cidr_blocks = ["10.0.1.0/24"] # Restrict to the EC2 subnet
   }
 }
 
@@ -148,12 +123,12 @@ resource "aws_db_instance" "postgres_db" {
   allocated_storage    = 20
   storage_type         = "gp2"
   engine               = "postgres"
-  engine_version       = "13.3"
+  engine_version       = "12.17"  # Updated version
   instance_class       = "db.t2.micro"
   name                 = "mydatabase"
   username             = var.db_username
   password             = var.db_password
-  parameter_group_name = "default.postgres13"
+  parameter_group_name = "default.postgres12"
   db_subnet_group_name = aws_db_subnet_group.db_subnet_group.name
   vpc_security_group_ids = [aws_security_group.db_sg.id]
   skip_final_snapshot  = true
@@ -162,5 +137,5 @@ resource "aws_db_instance" "postgres_db" {
 # DB Subnet Group
 resource "aws_db_subnet_group" "db_subnet_group" {
   name       = "my-db-subnet-group"
-  subnet_ids = [aws_subnet.rds_subnet_1.id, aws_subnet.rds_subnet_2.id]
+  subnet_ids = [aws_subnet.ec2_subnet.id]
 }
