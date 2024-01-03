@@ -13,7 +13,7 @@ variable "instance_type" {
 variable "name_tag" {
   type        = string
   description = "Name of the EC2 instance"
-  default     = "My EC2 Instance"
+  default     = "Test Application Instance"
 }
 
 # Create a new VPC
@@ -23,7 +23,7 @@ resource "aws_vpc" "my_vpc" {
   enable_dns_hostnames = true
 
   tags = {
-    Name = "MyVPC"
+    Name = "TESTAPPVPC"
   }
 }
 
@@ -42,7 +42,7 @@ resource "aws_subnet" "ec2_subnet" {
 resource "aws_subnet" "rds_subnet" {
   vpc_id     = aws_vpc.my_vpc.id
   cidr_block = "10.0.2.0/24"
-  availability_zone = "us-east-1b" # Change as needed
+  availability_zone = "us-east-1a" # Change as needed
 
   tags = {
     Name = "rds-subnet"
